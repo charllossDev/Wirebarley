@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<title>환율 계산기</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	</head>
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+<body>
+	<header th:replace="fragments/header :: header">
+		<p>This is default header area for default layout</p>
+	</header>
+
+	<div class="container">
+		<div class="hero-unit">
+			<p>
+				송금국가: 미국(USD)
+			</p>
+			<p>
+				수취국가:
+				<label>
+					<select name="currencies" id="currencies">
+						<option value="KRW" selected="selected">한국(KRW)</option>
+						<option value="JPY">일본(JPY)</option>
+						<option value="PHP" >필리핀(PHP)</option>
+					</select>
+				</label>
+			</p>
+			<p>
+				환율: <span id="moneyRate" th:text="${rate} + ' ' + ${currencies}" ></span>
+			</p>
+			<p>
+				송금액: <label><input type="text" id="money" onKeyup="this.value=this.value.replace(/[^0-9]/g,'');"></label> USD
+			</p>
+			<button type="button" id="calculate">Submit</button>
+			<br><br><br>
+			<div id="result">
+
+			</div>
+		</div>
+		<footer th:replace="fragments/footer :: footer">
+			<p>This is default footer area for default layout</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript">
+
+		$(function() {
+
+			$("#money").on("keyup", function() {
+				var val= $(this).val();
+
+				if(val.replace(/[0-9]/g, "").length > 0) {
+					alert("숫자만 입력해 주십시오.");
+					$(this).val('');
+				}
+
+				if(val < 1 || val > 100) {
+					alert("1~100 범위로 입력해 주십시오.");
+					$(this).val('');
+				}
+			});
+
+
+			$("#currencies").change(function() {
+				$.ajax({
+					url			: "http://localhost:8080/api/rate" ,
+					type		: "POST",
+					dataType	: "json",
+					contentType	: "application/json;charset=UTF-8",
+					data		: JSON.stringify({"currencies" : $("#currencies").val()}),
+					success 	: function(data) {
+						if (data.result.success) {
+
+							$("#moneyRate").text(data.result.rate + " " + data.result.currencies);
+
+						} else {
+							alert(data.result.msg);
+						}
+					},
+					error		: function(data) {
+						console.log(data);
+					}
+				});
+			});
+
+			$("#calculate").click(function() {
+				const $money = $("#money");
+				const moneyVal = $money.val();
+
+				if(moneyVal < 1 || moneyVal > 10000) {
+					alert("1~10000 범위로 입력해 주십시오.");
+					$money.val('');
+					$money.focus();
+
+					return false;
+				}
+
+				$.ajax({
+					url			: "http://localhost:8080/api/calculate" ,
+					type		: "POST",
+					dataType	: "json",
+					contentType	: "application/json;charset=UTF-8",
+					data		: JSON.stringify({"currencies" : $("#currencies").val(), "money": moneyVal}),
+					success 	: function(data) {
+						if (data.result.success) {
+							console.log(data);
+							$("#moneyRate").text(data.result.rate + " " + data.result.currencies);
+							$("#result").text("수취금액은 " + data.result.calculate + " " + $("#currencies").val() + " 입니다");
+
+						} else {
+							alert(data.result.msg);
+						}
+					},
+					error		: function(data) {
+						console.log(data);
+					}
+				});
+
+			});
+		});
+	</script>
+</body>
+</html>
+
+<script>
+
+
+</script>
