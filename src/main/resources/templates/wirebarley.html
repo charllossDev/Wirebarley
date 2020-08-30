@@ -47,15 +47,10 @@
 		$(function() {
 
 			$("#money").on("keyup", function() {
-				var val= $(this).val();
+				const val= $(this).val();
 
-				if(val.replace(/[0-9]/g, "").length > 0) {
-					alert("숫자만 입력해 주십시오.");
-					$(this).val('');
-				}
-
-				if(val < 1 || val > 100) {
-					alert("1~100 범위로 입력해 주십시오.");
+				if(val < 1 || val > 10000) {
+					alert("1~10000 범위로 입력해 주십시오.");
 					$(this).val('');
 				}
 			});
@@ -84,28 +79,21 @@
 			});
 
 			$("#calculate").click(function() {
-				const $money = $("#money");
-				const moneyVal = $money.val();
 
-				if(moneyVal < 1 || moneyVal > 10000) {
-					alert("1~10000 범위로 입력해 주십시오.");
-					$money.val('');
-					$money.focus();
-
-					return false;
-				}
+				const moneyVal 		= $("#money").val();
+				const curreniesVal 	= $("#currencies").val();
 
 				$.ajax({
 					url			: "http://localhost:8080/api/calculate" ,
 					type		: "POST",
 					dataType	: "json",
 					contentType	: "application/json;charset=UTF-8",
-					data		: JSON.stringify({"currencies" : $("#currencies").val(), "money": moneyVal}),
+					data		: JSON.stringify({"currencies" : curreniesVal, "money": moneyVal}),
 					success 	: function(data) {
 						if (data.result.success) {
 							console.log(data);
 							$("#moneyRate").text(data.result.rate + " " + data.result.currencies);
-							$("#result").text("수취금액은 " + data.result.calculate + " " + $("#currencies").val() + " 입니다");
+							$("#result").text("수취금액은 " + data.result.calculate + " " + curreniesVal + " 입니다");
 
 						} else {
 							alert(data.result.msg);
