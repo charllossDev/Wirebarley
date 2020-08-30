@@ -38,7 +38,14 @@ public class WirebarleyController {
 	@PostMapping("/api/rate")
 	public ModelAndView getRateJson(@RequestBody JSONObject jsonObj) {
 
-		return setJsonResponse(CurrencyLayer.getRateFromCurrencyLayer(jsonObj.get("currencies").toString()));
+		if (jsonObj.containsKey("currencies"))
+			return setJsonResponse(CurrencyLayer.getRateFromCurrencyLayer(jsonObj.get("currencies").toString()));
+		else {
+			jsonObj.put("msg", "[ParamError]: Required param is 'currencies'");
+			jsonObj.put("success", false);
+			jsonObj.put("code", "800");
+			return setJsonResponse(jsonObj);
+		}
 	}
 
 	/**
@@ -49,7 +56,14 @@ public class WirebarleyController {
 	@PostMapping("/api/calculate")
 	public ModelAndView getCalculateJson(@RequestBody JSONObject jsonObj) {
 
-		return setJsonResponse(CurrencyLayer.getCalculateFromCurrencyLayer(jsonObj));
+		if (jsonObj.containsKey("currencies") && jsonObj.containsKey("money"))
+			return setJsonResponse(CurrencyLayer.getCalculateFromCurrencyLayer(jsonObj));
+		else {
+			jsonObj.put("msg", "[ParamError]: Required param is 'currencies' and 'money'");
+			jsonObj.put("success", false);
+			jsonObj.put("code", "800");
+			return setJsonResponse(jsonObj);
+		}
 	}
 
 	/**

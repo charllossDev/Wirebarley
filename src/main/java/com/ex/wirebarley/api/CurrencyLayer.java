@@ -1,8 +1,10 @@
 package com.ex.wirebarley.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -23,11 +25,12 @@ import java.util.Map;
 
 public class CurrencyLayer {
 
-	private static final String TARGET_URL 	= "http://apilayer.net/api/";
-	private static final String ACCESS_KEY 	= "3c85b8f9e2747eca37ea4c0de66c41ac";
-	private static final String END_POINT 	= "live";
+	private static final String 		TARGET_URL 		= "http://apilayer.net/api/";
+	private static final String 		ACCESS_KEY 		= "37482796245ba05928d801956a2a35fb";
+	private static final String 		END_POINT 		= "live";
+	private static final DecimalFormat 	MONEY_FORMAT 	= new DecimalFormat("#,##0.00");
 
-	private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0.00");
+	private static Logger logger = LoggerFactory.getLogger(ApplicationRunner.class);
 
 	// Api 호출 메서드
 	private static JSONObject restApiCall(String currencies) {
@@ -53,15 +56,26 @@ public class CurrencyLayer {
 			resultJson = (JSONObject)new JSONParser().parse(result.getBody());
 
 		} catch (HttpClientErrorException | HttpServerErrorException e) {
-			resultJson.put("code", e.getRawStatusCode());
-			resultJson.put("msg"  , e.getStatusText());
+			logger.error("CurrencyLayer API Error : restApiCall" + e.getMessage());
+
+			JSONObject errorJson = new JSONObject();
+			errorJson.put("code", e.getRawStatusCode());
+			errorJson.put("info"  , e.getStatusText());
+
 			resultJson.put("success", false);
+			resultJson.put("error", errorJson);
 		} catch (Exception e) {
-			resultJson.put("code", "999");
-			resultJson.put("msg"  , "Exception 오류");
+			logger.error("CurrencyLayer API Error : restApiCall" + e.getMessage());
+
+			JSONObject errorJson = new JSONObject();
+			errorJson.put("code", "999");
+			errorJson.put("info"  , "Exception 오류");
+
 			resultJson.put("success", false);
+			resultJson.put("error", errorJson);
 		}
 
+		logger.debug(resultJson.toJSONString());
 		return resultJson;
 	}
 
@@ -81,10 +95,11 @@ public class CurrencyLayer {
 			resultMap.put("rate", MONEY_FORMAT.format(((JSONObject)jsonObj.get("quotes")).get("USD" + currencies)));
 			resultMap.put("currencies", currencies + "/USD");
 		} else {
-			resultMap.put("msg", jsonObj.get("msg"));
-			resultMap.put("code", jsonObj.get("code"));
+			resultMap.put("msg",  ((JSONObject)jsonObj.get("error")).get("info"));
+			resultMap.put("code", ((JSONObject)jsonObj.get("error")).get("code"));
 		}
 
+		logger.info(resultMap.toString());
 		return resultMap;
 	}
 
@@ -99,12 +114,24 @@ public class CurrencyLayer {
 		Map<String, Object> resultMap = getRateFromCurrencyLayer(currencies);
 
 		if ((boolean)resultMap.get("success")) {
-			BigDecimal rate 	= new BigDecimal(resultMap.get("rate").toString().replace(",", ""));
-			BigDecimal money 	= new BigDecimal(jsonParam.get("money").toString());
+			try {
 
-			resultMap.put("calculate", MONEY_FORMAT.format(money.multiply(rate)));
+				BigDecimal rate = new BigDecimal(resultMap.get("rate").toString().replace(",", ""));
+				BigDecimal money = new BigDecimal(jsonParam.get("money").toString());
+
+				if (money.compareTo(new BigDecimal(10000)) > 0) throw new Exception("Money is too Big");
+				else if (money.compareTo(new BigDecimal(0)) <= 0) throw new Exception("Money is too Small");
+
+				resultMap.put("calculate", MONEY_FORMAT.format(money.multiply(rate)));
+			} catch (Exception e) {
+
+				resultMap.put("success", false);
+				resultMap.put("msg", e.getMessage());
+				resultMap.put("code", "900");
+			}
 		}
 
+		logger.info(resultMap.toString());
 		return resultMap;
 	}
 }

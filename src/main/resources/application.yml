@@ -7,3 +7,6 @@ spring:
     mode: HTML
     cache: false
     encoding: UTF-8
+  output:
+    ansi:
+      enabled: always
