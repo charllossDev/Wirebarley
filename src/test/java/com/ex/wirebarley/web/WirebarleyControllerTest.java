@@ -47,7 +47,7 @@ class WirebarleyControllerTest {
 		jsonObject.put("currencies", "JPY");
 
 		// Error
-		//jsonObject.put("currencies", "error");
+		// jsonObject.put("currencies", "error");
 
 		ModelAndView mv = wirebarleyController.getRateJson(jsonObject);
 		Map<String, Object> result = (HashMap) mv.getModel().get("result");

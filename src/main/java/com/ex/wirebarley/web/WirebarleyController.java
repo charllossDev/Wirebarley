@@ -23,7 +23,9 @@ public class WirebarleyController {
 	@GetMapping("/")
 	public ModelAndView main() throws Exception {
 
-		Map<String, Object> resultMap = CurrencyLayer.getRateFromCurrencyLayer("KRW");
+		JSONObject jsonObj = new JSONObject();
+		jsonObj.put("currencies", "KRW");
+		Map<String, Object> resultMap = CurrencyLayer.getRateFromCurrencyLayer(jsonObj);
 		ModelAndView mv = new ModelAndView((boolean)resultMap.get("success") ? "wirebarley" : "error");
 		mv.addAllObjects(resultMap);
 
@@ -38,14 +40,7 @@ public class WirebarleyController {
 	@PostMapping("/api/rate")
 	public ModelAndView getRateJson(@RequestBody JSONObject jsonObj) {
 
-		if (jsonObj.containsKey("currencies"))
-			return setJsonResponse(CurrencyLayer.getRateFromCurrencyLayer(jsonObj.get("currencies").toString()));
-		else {
-			jsonObj.put("msg", "[ParamError]: Required param is 'currencies'");
-			jsonObj.put("success", false);
-			jsonObj.put("code", "800");
-			return setJsonResponse(jsonObj);
-		}
+		return setJsonResponse(CurrencyLayer.getRateFromCurrencyLayer(jsonObj));
 	}
 
 	/**
@@ -56,14 +51,7 @@ public class WirebarleyController {
 	@PostMapping("/api/calculate")
 	public ModelAndView getCalculateJson(@RequestBody JSONObject jsonObj) {
 
-		if (jsonObj.containsKey("currencies") && jsonObj.containsKey("money"))
-			return setJsonResponse(CurrencyLayer.getCalculateFromCurrencyLayer(jsonObj));
-		else {
-			jsonObj.put("msg", "[ParamError]: Required param is 'currencies' and 'money'");
-			jsonObj.put("success", false);
-			jsonObj.put("code", "800");
-			return setJsonResponse(jsonObj);
-		}
+		return setJsonResponse(CurrencyLayer.getCalculateFromCurrencyLayer(jsonObj));
 	}
 
 	/**

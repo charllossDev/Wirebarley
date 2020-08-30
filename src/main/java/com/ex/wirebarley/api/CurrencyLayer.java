@@ -84,19 +84,28 @@ public class CurrencyLayer {
 	 * @param currencies : 선택한 국가 코드
 	 * @return api 통신 성공 : 횐율 정보 / 실패: 통신 실패 정보
 	 */
-	public static Map<String, Object> getRateFromCurrencyLayer(String currencies) {
+	public static Map<String, Object> getRateFromCurrencyLayer(JSONObject jsonParam) {
 
-		JSONObject jsonObj = restApiCall(currencies);
 		Map<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap.put("success", jsonObj.get("success"));
 
-		if ((boolean)resultMap.get("success")) {
-			resultMap.put("timestamp", jsonObj.get(("timestamp")));
-			resultMap.put("rate", MONEY_FORMAT.format(((JSONObject)jsonObj.get("quotes")).get("USD" + currencies)));
-			resultMap.put("currencies", currencies + "/USD");
+		if (jsonParam.containsKey("currencies")) {
+			String currencies = jsonParam.get("currencies").toString();
+			JSONObject jsonObj = restApiCall(currencies);
+
+			resultMap.put("success", jsonObj.get("success"));
+
+			if ((boolean) resultMap.get("success")) {
+				resultMap.put("timestamp", jsonObj.get(("timestamp")));
+				resultMap.put("rate", MONEY_FORMAT.format(((JSONObject) jsonObj.get("quotes")).get("USD" + currencies)));
+				resultMap.put("currencies", currencies + "/USD");
+			} else {
+				resultMap.put("msg", ((JSONObject) jsonObj.get("error")).get("info"));
+				resultMap.put("code", ((JSONObject) jsonObj.get("error")).get("code"));
+			}
 		} else {
-			resultMap.put("msg",  ((JSONObject)jsonObj.get("error")).get("info"));
-			resultMap.put("code", ((JSONObject)jsonObj.get("error")).get("code"));
+			resultMap.put("msg", "[ParamError]: Required param is 'currencies'");
+			resultMap.put("success", false);
+			resultMap.put("code", "800");
 		}
 
 		logger.info(resultMap.toString());
@@ -110,25 +119,32 @@ public class CurrencyLayer {
 	 */
 	public static Map<String, Object> getCalculateFromCurrencyLayer(JSONObject jsonParam) {
 
-		String currencies = jsonParam.get("currencies").toString();
-		Map<String, Object> resultMap = getRateFromCurrencyLayer(currencies);
+		Map<String, Object> resultMap = null;
+		if (jsonParam.containsKey("currencies") && jsonParam.containsKey("money")) {
+			resultMap = getRateFromCurrencyLayer(jsonParam);
 
-		if ((boolean)resultMap.get("success")) {
-			try {
+			if ((boolean) resultMap.get("success")) {
+				try {
+					BigDecimal rate = new BigDecimal(resultMap.get("rate").toString().replace(",", ""));
+					BigDecimal money = new BigDecimal(jsonParam.get("money").toString());
 
-				BigDecimal rate = new BigDecimal(resultMap.get("rate").toString().replace(",", ""));
-				BigDecimal money = new BigDecimal(jsonParam.get("money").toString());
+					if (money.compareTo(new BigDecimal(10000)) > 0) throw new Exception("Money is too Big");
+					else if (money.compareTo(new BigDecimal(0)) <= 0) throw new Exception("Money is too Small");
 
-				if (money.compareTo(new BigDecimal(10000)) > 0) throw new Exception("Money is too Big");
-				else if (money.compareTo(new BigDecimal(0)) <= 0) throw new Exception("Money is too Small");
+					resultMap.put("calculate", MONEY_FORMAT.format(money.multiply(rate)));
+				} catch (Exception e) {
 
-				resultMap.put("calculate", MONEY_FORMAT.format(money.multiply(rate)));
-			} catch (Exception e) {
-
-				resultMap.put("success", false);
-				resultMap.put("msg", e.getMessage());
-				resultMap.put("code", "900");
+					resultMap.put("success", false);
+					resultMap.put("msg", e.getMessage());
+					resultMap.put("code", "900");
+				}
 			}
+		} else {
+			resultMap = new HashMap<String, Object>();
+
+			resultMap.put("msg", "[ParamError]: Required param is 'currencies' and 'money'");
+			resultMap.put("success", false);
+			resultMap.put("code", "800");
 		}
 
 		logger.info(resultMap.toString());
