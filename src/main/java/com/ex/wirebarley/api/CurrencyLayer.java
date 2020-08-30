@@ -29,14 +29,15 @@ public class CurrencyLayer {
 
 	private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0.00");
 
+	// Api 호출 메서드
 	private static JSONObject restApiCall(String currencies) {
 
 		JSONObject resultJson = new JSONObject();
 
 		try {
 			HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-			factory.setConnectTimeout(5000);    //타임아웃 설정 5초
-			factory.setReadTimeout(5000);        //타임아웃 설정 5초
+			factory.setConnectTimeout(5000);	//타임아웃 설정 5초
+			factory.setReadTimeout(5000);		//타임아웃 설정 5초
 
 			RestTemplate restCallApiTemplate = new RestTemplate(factory);
 
@@ -47,7 +48,7 @@ public class CurrencyLayer {
 					.queryParam("access_key", ACCESS_KEY)
 					.queryParam("currencies", currencies)
 					.build(false);    //자동으로 encode해주는 것을 막기 위해 false
-			//resultJson.put("data", "data");
+
 			ResponseEntity<String> result = restCallApiTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<String>(headers), String.class);
 			resultJson = (JSONObject)new JSONParser().parse(result.getBody());
 
@@ -64,6 +65,11 @@ public class CurrencyLayer {
 		return resultJson;
 	}
 
+	/**
+	 * 선택한 param 국가의 USD 환율 조회
+	 * @param currencies : 선택한 국가 코드
+	 * @return api 통신 성공 : 횐율 정보 / 실패: 통신 실패 정보
+	 */
 	public static Map<String, Object> getRateFromCurrencyLayer(String currencies) {
 
 		JSONObject jsonObj = restApiCall(currencies);
@@ -82,6 +88,11 @@ public class CurrencyLayer {
 		return resultMap;
 	}
 
+	/**
+	 * 선택한 param 국가의 USD 환율 조회 및 수취금액 계산
+	 * @param jsonParam : {currencies = 국가 코드, money = 환전 금액}
+	 * @return api 통신 성공 : 횐율 정보 / 실패: 통신 실패 정보
+	 */
 	public static Map<String, Object> getCalculateFromCurrencyLayer(JSONObject jsonParam) {
 
 		String currencies = jsonParam.get("currencies").toString();
