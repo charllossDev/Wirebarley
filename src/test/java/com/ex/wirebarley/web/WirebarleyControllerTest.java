@@ -38,6 +38,7 @@ class WirebarleyControllerTest {
 	 * * Parameter 유무 및 잘못된 Parameter 값 체크
 	 * * CurrencyLayer API 작동 확인 체크
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	void getRateJsonTest() {
 
@@ -50,7 +51,7 @@ class WirebarleyControllerTest {
 		// jsonObject.put("currencies", "error");
 
 		ModelAndView mv = wirebarleyController.getRateJson(jsonObject);
-		Map<String, Object> result = (HashMap) mv.getModel().get("result");
+		Map<String, Object> result = (HashMap<String, Object>) mv.getModel().get("result");
 
 		if ((boolean)result.get("success")) {
 			assertThat(result.get("success")).isEqualTo(true);
@@ -73,6 +74,7 @@ class WirebarleyControllerTest {
 	 * * Parameter 유무 및 잘못된 Parameter 값 체크
 	 * * CurrencyLayer API 작동 확인 체크
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	void getCalculateJsonTest() {
 
@@ -85,7 +87,7 @@ class WirebarleyControllerTest {
 		jsonObject.put("money", 10001);
 
 		ModelAndView mv = wirebarleyController.getCalculateJson(jsonObject);
-		Map<String, Object> result = (HashMap) mv.getModel().get("result");
+		Map<String, Object> result = (HashMap<String, Object>) mv.getModel().get("result");
 
 		if ((boolean)result.get("success")) {
 			assertThat(result.get("success")).isEqualTo(true);

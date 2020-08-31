@@ -20,6 +20,7 @@ public class WirebarleyController {
 	 * 환율 조회 View / 최초 한국/USD 환율 조회
 	 * @return 환율 조회 View
 	 */
+	@SuppressWarnings("unchecked")
 	@GetMapping("/")
 	public ModelAndView main() throws Exception {
 

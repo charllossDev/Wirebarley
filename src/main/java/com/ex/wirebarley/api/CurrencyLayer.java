@@ -33,6 +33,7 @@ public class CurrencyLayer {
 	private static Logger logger = LoggerFactory.getLogger(ApplicationRunner.class);
 
 	// Api 호출 메서드
+	@SuppressWarnings("unchecked")
 	private static JSONObject restApiCall(String currencies) {
 
 		JSONObject resultJson = new JSONObject();
