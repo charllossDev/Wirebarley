@@ -1,5 +1,6 @@
 package com.ex.wirebarley.web;
 
+import com.ex.wirebarley.dto.Exchange;
 import org.json.simple.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,10 +23,9 @@ class WirebarleyControllerTest {
 
 	/**
 	 * 처음 화면 View Test
-	 * @throws Exception
 	 */
 	@Test
-	void mainTest() throws Exception {
+	void mainTest(){
 
 		ModelAndView mv = wirebarleyController.main();
 
@@ -42,7 +42,15 @@ class WirebarleyControllerTest {
 	@Test
 	void getRateJsonTest() {
 
-		JSONObject jsonObject = new JSONObject();
+		Exchange.Request request = new Exchange.Request("KRW");
+		ModelAndView mv = wirebarleyController.getRateJson(request);
+
+		System.out.println(mv.getModel().get("result"));
+
+		Map<String, Object> result = (Map<String, Object>) mv.getModel().get("result");
+
+
+/*		JSONObject jsonObject = new JSONObject();
 
 		// KRW, JPY, PHP
 		jsonObject.put("currencies", "JPY");
@@ -58,15 +66,15 @@ class WirebarleyControllerTest {
 			System.out.println("SUCCESS JsonValue = " + result.toString());
 		} else {
 
-			/**
+
 			 * Error Code
 			 * * 100 ~ 500 : Html Status Code
 			 * * 800 : Parameter Error
 			 * * 900 : Money Change Error(Too Big or Too Small)
 			 * * 999 : 'CURRENCYLAYER' API Error
-			 */
+
 			System.out.println("[" + result.get("code") + "]" + result.get("msg"));
-		}
+		}*/
 	}
 
 	/**
@@ -74,34 +82,15 @@ class WirebarleyControllerTest {
 	 * * Parameter 유무 및 잘못된 Parameter 값 체크
 	 * * CurrencyLayer API 작동 확인 체크
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
 	void getCalculateJsonTest() {
 
-		JSONObject jsonObject = new JSONObject();
-
 		// Key: currencies = [KRW, JPY, PHP]
-		jsonObject.put("currencies", "PHP");
-
 		// Key: Money (Only Number, 1 ~ 10000)
-		jsonObject.put("money", 10001);
+		Exchange.Request request = new Exchange.Request("PHP", "500");
 
-		ModelAndView mv = wirebarleyController.getCalculateJson(jsonObject);
-		Map<String, Object> result = (HashMap<String, Object>) mv.getModel().get("result");
+		ModelAndView mv = wirebarleyController.getCalculateJson(request);
 
-		if ((boolean)result.get("success")) {
-			assertThat(result.get("success")).isEqualTo(true);
-			System.out.println("SUCCESS JsonValue = " + result.toString());
-		} else {
-
-			/**
-			 * Error Code
-			 * * 100 ~ 500 : Html Status Code
-			 * * 800 : Parameter Error
-			 * * 900 : Money Change Error(Too Big or Too Small)
-			 * * 999 : 'CURRENCYLAYER' API Error
-			 */
-			System.out.println("Error[" + result.get("code") + "] " + result.get("msg"));
-		}
+		System.out.println(mv.getModel().get("result"));
 	}
 }

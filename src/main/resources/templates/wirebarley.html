@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 	<head>
 		<title>환율 계산기</title>
@@ -26,7 +27,7 @@
 				</label>
 			</p>
 			<p>
-				환율: <span id="moneyRate" th:text="${rate} + ' ' + ${currencies}" ></span>
+				환율: <span id="moneyRate" th:text="${result.rate} + ' ' + ${result.currencies}" ></span>
 			</p>
 			<p>
 				송금액: <label><input type="text" id="money" onKeyup="this.value=this.value.replace(/[^0-9]/g,'');"></label> USD
@@ -64,12 +65,13 @@
 					contentType	: "application/json;charset=UTF-8",
 					data		: JSON.stringify({"currencies" : $("#currencies").val()}),
 					success 	: function(data) {
+						console.log(data);
 						if (data.result.success) {
 
 							$("#moneyRate").text(data.result.rate + " " + data.result.currencies);
 
 						} else {
-							alert(data.result.msg);
+							alert(data.result.error.info);
 						}
 					},
 					error		: function(data) {
@@ -90,13 +92,14 @@
 					contentType	: "application/json;charset=UTF-8",
 					data		: JSON.stringify({"currencies" : curreniesVal, "money": moneyVal}),
 					success 	: function(data) {
+						console.log(data);
 						if (data.result.success) {
 							console.log(data);
 							$("#moneyRate").text(data.result.rate + " " + data.result.currencies);
 							$("#result").text("수취금액은 " + data.result.calculate + " " + curreniesVal + " 입니다");
 
 						} else {
-							alert(data.result.msg);
+							alert(data.result.error.info);
 						}
 					},
 					error		: function(data) {
