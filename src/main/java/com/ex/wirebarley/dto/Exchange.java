@@ -2,10 +2,8 @@ package com.ex.wirebarley.dto;
 
 import lombok.*;
 import org.json.simple.JSONObject;
-import org.junit.runners.Parameterized;
 
 import java.sql.Date;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -24,7 +22,7 @@ public class Exchange {
         private String money;
 
         public Request (String currencies) {
-            this.currencies     = currencies;
+            this.currencies = currencies;
         }
 
         public Request (String currencies, String money) {
@@ -109,5 +107,4 @@ public class Exchange {
         private String      info;       // Error Message
         private String      exception;  // Error Exception
     }
-
 }
